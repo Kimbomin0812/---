@@ -1,0 +1,122 @@
+###나머지 정리 프로그램
+
+## f(x)식의 계수들을 받아서 a-나누는 수로 '조립제법' - synthetic_division 함수
+def sd(coeffs, a):
+    n = len(coeffs)
+    quot = [0]* (n-1) #몫은 나누는 수 보다 차수가 1만큼 작음 => quot의 리스트 속 원소의 개수 n-1 개
+    quot[0] = coeffs[0]  #조립제법에서 첫 항은 그대로 끌어내림
+
+    for i in range(1,n): #조립제법 계산 - n항 = n항 + n-1 항 * 나누는 수
+        quot[i-1] = coeffs[i-1]
+        coeffs[i] = coeffs[i] + coeffs[i-1]*a
+
+    remainder = coeffs[-1] # 나머지
+    quot = coeffs[:-1] #몫
+
+    return quot, remainder
+
+##계수를 다항식으로 읽을 수 있는 형태로 바꾸기 - form arrage 함수
+def fa(coeffs):
+    result = "" #계수들을 변수와 함께 담는 빈 그릇
+    degree = len(coeffs) - 1 #차수
+
+    for i in range(len(coeffs)):
+        c = coeffs[i]
+        d = degree - i
+
+        if c == 0:
+            continue
+
+        if d == 0:
+            term = str(c) #상수항
+        elif d == 1:
+            term = str(c) + "x" #일차항
+        else:
+            term = str(c) + "x^" + str(d) #이차 이상의 항
+
+        if result == "":
+            result += term
+        else:
+            if c > 0:
+                result += " + " + term
+            else:
+                result += " - " + term.lstrip(" -") #lstrip()으로 term의 왼쪽의 공백과 특수문자를 지움. 그리고 lstrip("-")로 지운 자리에 - 넣기
+
+    if result == "":
+        result = "0"
+
+    return result
+
+##메인함수: 사용자 입력 + 전체 흐름
+def main():
+    print("(x-a)로 다항식을 나누는 프로그램입니다.")
+    print("종료하고 싶으면 'q' 또는 'exit'을 입력하세요.\n")
+
+    while True:
+        inputnum = input("최고차항의 차수를 입력하세요: ") #계수 입력 받기
+        if inputnum.lower() in ["q", "exit", "종료"]: #inputnum을 소문자로 바꾸기. 대문자로 입력하든 소문자로 입력하든 작동하도록.
+            print("프로그램을 종료합니다.")
+            break
+
+        if not inputnum.isdigit(): #isdigit(): inputnum에 숫자만 있는지를 판별함. 숫자만 있으면 True, 숫자 이외 문자나 =, -, + 등의 기호가 있을 경우 False
+            print("숫자를 입력해야합니다.")
+            continue
+
+        degree = int(inputnum)
+
+        
+        while True:
+            print(f"차수 {degree}부터 차수 0까지 {degree + 1}개의 계수를 입력하세요.")
+            coeffs_input = input("계수들, 그리고 상수항 입력 (예: 2 3 5 -6)")
+            if coeffs_input.lower() in ["q", "exit", "종료"]:
+                print("프로그램을 종료합니다.")
+                return
+
+            try:  #try와 except를 사용하면 오류 상황(ex-int를 사용하려면 숫자이어야 하는데 문자인 경우)에서 프로그램이 정지하지 않고 except에서 처리하도록 함.
+                parts = coeffs_input.strip().split() #양쪽의 공백과 특수 문자 제거
+                coeffs = []
+                for i in range(len(parts)):
+                    coeffs.append(int(parts[i]))
+            except:
+                print("계수는 정수로만 입력해야 합니다.")
+                continue
+
+            if len(coeffs) != degree + 1:
+                print(f" 계수는 정확히 {degree + 1}개 입력해야 합니다.")
+                continue
+            
+            if coeffs[0] == 0:
+                print("최고차항의 계수가 0이면 안 됩니다.")
+                continue
+
+            break #입력 성공 시 반복 탈출
+
+        # a 값 입력
+        a_input = input("(x - a)에서 a 값을 입력하세요: ")
+        if a_input.lower() in ["q", "exit", "종료"]:
+            print("프로그램을 종료합니다.")
+            break
+
+        try:
+            a = int(a_input)
+        except:
+            print("a는 정수로 입력해야 합니다.")
+            continue
+
+        #계산
+        quot, remainder = sd(coeffs[:],a) # 원본 복사
+
+        #출력
+        print("\n결과")
+        print("f(x) =", fa(coeffs))
+        print(f"f({a}) = {remainder} => 나머지는 {remainder}")
+
+        if remainder == 0:
+            print(f"→ 따라서 x - {a} 는 f(x)의 인수입니다!")
+        else:
+            print(f"→ 따라서 x - {a} 는 f(x)의 인수가 아닙니다.")
+
+        print("몫 다항식:", fa(quot))
+        print("--------------------------------\n")
+
+main()
